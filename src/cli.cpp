@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) try {
     operation = argv[1];
     
     
-    std::cout << "Semaphore Test" << filename
+    std::cout << "Semaphore Test" << std::endl;
          
     std::cout << "operation: " << operation << std::endl;
 
