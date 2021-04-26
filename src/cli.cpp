@@ -110,6 +110,10 @@ int main(int argc, char *argv[]) try {
         HelpAndQuit(options);
     }
     operation = argv[1];
+    
+    
+    std::cout << "Semaphore Test" << filename
+         
     std::cout << "operation: " << operation << std::endl;
 
     if (operation == "help") {
