@@ -63,45 +63,73 @@ void HelpAndQuit(cxxopts::Options options)
     exit(0);
 }
 
+// 主函数
 int main(int argc, char *argv[]) try {
+
+    // 输出此应用程序的使用说明，空间证明，用于绘制、生成和验证空间证明。
     cxxopts::Options options(
         "ProofOfSpace", "Utility for plotting, generating and verifying proofs of space.");
+    
+    // 输出运行指令，分别有：创建、测试、校验、检查，指令后面按照空格间隔，传递相应的参数
+    // 调用实例：
+    // ./ProofOfSpace create                        // 创建，.\ProofOfSpace.exe create -k 25 -r 2 -b 4608 -u 64 -t . -2 . -d .
+    // ./ProofOfSpace prove <challenge>             // 测试，参数：挑战， ./ProofOfSpace -f "plot.dat" prove 0x48e14b6feedc9d80e0e9338c8f7e5bbdce80d2df2bc3d9e03a06431c4036f6b7
+    // ./ProofOfSpace verify <proof> <challenge>    // 校验，参数1：proof文件，参数2：挑战，./ProofOfSpace -k 25 verify <hex proof> <32 byte hex challenge>，未测试，不知道hex proof是什么
+    // ./ProofOfSpace check                         // 检查，./ProofOfSpace check -f ./plot.dat 100
     options.positional_help("(create/prove/verify/check) param1 param2 ")
         .show_positional_help();
 
+
+
+
+
+    // 默认参数
     // Default values
-    uint8_t k = 20;
-    uint32_t num_buckets = 0;
-    uint32_t num_stripes = 0;
-    uint8_t num_threads = 0;
-    string filename = "plot.dat";
-    string tempdir = ".";
-    string tempdir2 = ".";
-    string finaldir = ".";
-    string operation = "help";
-    string memo = "0102030405";
-    string id = "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e";
-    bool nobitfield = false;
-    bool show_progress = false;
-    uint32_t buffmegabytes = 0;
+    uint8_t k = 20;                 // K的大小
+    uint32_t num_buckets = 0;       // 桶的数量
+    uint32_t num_stripes = 0;       // 条纹(内存)大小
+    uint8_t num_threads = 0;        // 线程数量
+    string filename = "plot.dat";   // Plots文件的后缀名
+    string tempdir = ".";           // 临时文件存放路径，默认为当前路径下
+    string tempdir2 = ".";          // 备用临时文件存放路径，默认为当前路径下
+    string finaldir = ".";          // 最终文件存放路径，默认为当前路径下
+    string operation = "help";      // 运行指令
+    string memo = "0102030405";     // 脑密码
+    string id = "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e"; // Id
+    bool nobitfield = false;        // 关闭bitfield(、位字段、字节牧场)
+    bool show_progress = false;     // 显示进度
+    uint32_t buffmegabytes = 0;     // 基础什么什么字节数
 
     options.allow_unrecognised_options().add_options()(
-            "k, size", "Plot size", cxxopts::value<uint8_t>(k))(
-            "r, threads", "Number of threads", cxxopts::value<uint8_t>(num_threads))(
-                "u, buckets", "Number of buckets", cxxopts::value<uint32_t>(num_buckets))(
-            "s, stripes", "Size of stripes", cxxopts::value<uint32_t>(num_stripes))(
-            "t, tempdir", "Temporary directory", cxxopts::value<string>(tempdir))(
+        // k，大小，Plot文件的大小
+        "k, size", "Plot size", cxxopts::value<uint8_t>(k))(
+        // r, 线程，线程数量
+        "r, threads", "Number of threads", cxxopts::value<uint8_t>(num_threads))(
+        // u, 桶，桶的大小
+        "u, buckets", "Number of buckets", cxxopts::value<uint32_t>(num_buckets))(
+        // s, 条纹，条纹的大小
+        "s, stripes", "Size of stripes", cxxopts::value<uint32_t>(num_stripes))(
+        // t，临时目录，临时文件存放路径
+        "t, tempdir", "Temporary directory", cxxopts::value<string>(tempdir))(
+        // 2，备用临时目录，备用临时文件存放路径
         "2, tempdir2", "Second Temporary directory", cxxopts::value<string>(tempdir2))(
+        // d，最终目录，最终文件存放目录
         "d, finaldir", "Final directory", cxxopts::value<string>(finaldir))(
+        // f，文件名，最终文件的文件名
         "f, file", "Filename", cxxopts::value<string>(filename))(
+        // m，填写到Plot文件中的备忘录
         "m, memo", "Memo to insert into the plot", cxxopts::value<string>(memo))(
+        // i, id，用于绘图的32字节的唯一种子
         "i, id", "Unique 32-byte seed for the plot", cxxopts::value<string>(id))(
+        // e, 关闭bitfield，关闭bitfield，关闭
         "e, nobitfield", "Disable bitfield", cxxopts::value<bool>(nobitfield))(
-        "b, buffer",
-        "Megabytes to be used as buffer for sorting and plotting",
+        // b, 用户排序和绘图的缓冲区大小，也就是内存大小
+        "b, buffer", "Megabytes to be used as buffer for sorting and plotting",
         cxxopts::value<uint32_t>(buffmegabytes))(
+        // p, 进度，在绘图时显示进度百分比
         "p, progress", "Display progress percentage during plotting",
         cxxopts::value<bool>(show_progress))(
+        // help, 输出帮助信息
         "help", "Print help");
 
     auto result = options.parse(argc, argv);
@@ -112,6 +140,7 @@ int main(int argc, char *argv[]) try {
     operation = argv[1];
     
     
+    // 增加调试信息
     std::cout << "Semaphore Test" << std::endl;
          
     std::cout << "operation: " << operation << std::endl;

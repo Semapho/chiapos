@@ -56,23 +56,25 @@ public:
     // (filename + ".table1.tmp", filename + ".p2.t3.sort_bucket_4.tmp", etc.) are created
     // and their total size will be larger than the final plot file. Temp files are deleted at the
     // end of the process.
+
     void CreatePlotDisk(
-        std::string tmp_dirname,
-        std::string tmp2_dirname,
-        std::string final_dirname,
-        std::string filename,
-        uint8_t k,
-        const uint8_t* memo,
-        uint32_t memo_len,
-        const uint8_t* id,
-        uint32_t id_len,
-        uint32_t buf_megabytes_input = 0,
-        uint32_t num_buckets_input = 0,
-        uint64_t stripe_size_input = 0,
-        uint8_t num_threads_input = 0,
-        bool nobitfield = false,
-        bool show_progress = false)
+        std::string tmp_dirname,            // 临时文件存放路径
+        std::string tmp2_dirname,           // 备用临时文件存放路径
+        std::string final_dirname,          // 最终文件存放路径
+        std::string filename,               // Plot文件名，示例(标识-k大小-日期-PlotId)：plot-k32-2021-05-02-10-56-072e5997602e5796b8966ac1e75044d2e81b2897ebab455de18211db12d79a23.plot
+        uint8_t k,                          // K的大小
+        const uint8_t* memo,                // memo字段，Plot的备忘录，示例(pool_public_key + farmer_public_key + sk，直接进行字节拼接)：b523cd9d58972af56ba6d5d61ccdf77e76894bafa5df3785055334e98e9b7dcacf21d41c491d2d876767df304e2742ae939df12309be853da848961b2089f9c3620622a1f2e49fd0fa74f228a006367000e58d3ded9df8004de5c54acada438032fb11d5e27393ddd4c66ec8ea5452b9dd20d91ecefc9a2d0c5dcccb0adec9c9
+        uint32_t memo_len,                  // memeo字段的长度，48 + 48 + 32(详见plot_tools.py的stream_plot_info_pk方法，这个设计的为可变，具体意图不明)
+        const uint8_t* id,                  // Plot文件的唯一Id(Plot Id)
+        uint32_t id_len,                    // Id的长度，32(详见WriteHeader的id，这个在Chia设计的时候已经固定死了，不回发生变更)
+        uint32_t buf_megabytes_input = 0,   // 创建Plot文件设置的缓冲区(内存)大小
+        uint32_t num_buckets_input = 0,     // 创建Plot文件设置的桶的数量
+        uint64_t stripe_size_input = 0,     // 创建Plot文件设置的条带深度
+        uint8_t num_threads_input = 0,      // 创建Plots文件设置的现场数量
+        bool nobitfield = false,            // 设置nobitfield
+        bool show_progress = false)         // 显示进度
     {
+        //增加打开文件的限制，我们会打开很多文件.
         // Increases the open file limit, we will open a lot of files.
 #ifndef _WIN32
         struct rlimit the_limit = {600, 600};
@@ -80,6 +82,8 @@ public:
             std::cout << "setrlimit failed" << std::endl;
         }
 #endif
+
+        // 检查k的取值范围
         if (k < kMinPlotSize || k > kMaxPlotSize) {
             throw InvalidValueException("Plot size k= " + std::to_string(k) + " is invalid");
         }

@@ -27,17 +27,27 @@ using std::experimental::optional;
 #include "../src/prover_disk.hpp"
 #include "../src/verifier.hpp"
 
+
+/*
+ * 此源码为封装将C++方法通过PyBind11提供给Python调用的接口
+ */
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(chiapos, m)
 {
     m.doc() = "Chia Proof of Space";
 
+    // 类：DiskPlotter，创建Plot的类
     py::class_<DiskPlotter>(m, "DiskPlotter")
         .def(py::init<>())
+
+        // 接口：create_plot_disk，在硬盘上创建Plot的方法
         .def(
             "create_plot_disk",
-            [](DiskPlotter &dp,
+            [](
+                // 参数，
+               DiskPlotter &dp,
                const std::string tmp_dir,
                const std::string tmp2_dir,
                const std::string final_dir,
@@ -55,6 +65,7 @@ PYBIND11_MODULE(chiapos, m)
                 std::string id_str(id);
                 const uint8_t *id_ptr = reinterpret_cast<const uint8_t *>(id_str.data());
                 try {
+                    // 调用方法，在硬盘上创建Plot文件
                     dp.CreatePlotDisk(tmp_dir,
                                       tmp2_dir,
                                       final_dir,
