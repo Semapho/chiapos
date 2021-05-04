@@ -130,6 +130,10 @@ void* phase1_thread(THREADDATA* ptd)
     uint32_t const compressed_entry_size_bytes = ptd->compressed_entry_size_bytes;
     std::vector<FileDisk>* ptmp_1_disks = ptd->ptmp_1_disks;
 
+    Timer start_time; // 开始时间
+
+    start_time.PrintElapsed("phase1_thread 1, time:"); 
+
     // Streams to read and right to tables. We will have handles to two tables. We will
     // read through the left table, compute matches, and evaluate f for matching entries,
     // writing results to the right table.
@@ -153,6 +157,8 @@ void* phase1_thread(THREADDATA* ptd)
     uint64_t totalstripes = (prevtableentries + globals.stripe_size - 1) / globals.stripe_size;
     uint64_t threadstripes = (totalstripes + globals.num_threads - 1) / globals.num_threads;
 
+    start_time.PrintElapsed("phase1_thread 2, time:"); 
+
     for (uint64_t stripe = 0; stripe < threadstripes; stripe++) {
         uint64_t pos = (stripe * globals.num_threads + ptd->index) * globals.stripe_size;
         uint64_t const endpos = pos + globals.stripe_size + 1;  // one y value overlap
@@ -162,6 +168,8 @@ void* phase1_thread(THREADDATA* ptd)
         uint64_t stripe_start_correction = 0xffffffffffffffff;
         uint64_t right_writer_count = 0;
         uint64_t matches = 0;  // Total matches
+
+        start_time.PrintElapsed("phase1_thread 3, time:" + std::to_string(stripe)); 
 
         // This is a sliding window of entries, since things in bucket i can match with things in
         // bucket
@@ -478,6 +486,8 @@ void* phase1_thread(THREADDATA* ptd)
             ++pos;
         }
 
+        start_time.PrintElapsed("phase1_thread 4, time:" + std::to_string(stripe)); 
+
         // If we needed new bucket, we already waited
         // Do not wait if we are the first thread, since we are guaranteed that everything is written
         if (!need_new_bucket && !first_thread) {
@@ -489,6 +499,8 @@ void* phase1_thread(THREADDATA* ptd)
         uint32_t const endbyte = (ysize + pos_size + 7) / 8 - 1;
         uint64_t const shiftamt = (8 - ((ysize + pos_size) % 8)) % 8;
         uint64_t const correction = (globals.left_writer_count - stripe_start_correction) << shiftamt;
+
+        start_time.PrintElapsed("phase1_thread 5, time:" + std::to_string(stripe)); 
 
         // Correct positions
         for (uint32_t i = 0; i < right_writer_count; i++) {
@@ -515,6 +527,10 @@ void* phase1_thread(THREADDATA* ptd)
                 right_writer_buf.get(),
                 right_writer_count * right_entry_size_bytes);
         }
+
+        start_time.PrintElapsed("phase1_thread 6, time:" + std::to_string(stripe)); 
+
+
         globals.right_writer += right_writer_count * right_entry_size_bytes;
         globals.right_writer_count += right_writer_count;
 
@@ -525,6 +541,7 @@ void* phase1_thread(THREADDATA* ptd)
 
         globals.matches += matches;
         Sem::Post(ptd->mine);
+        start_time.PrintElapsed("phase1_thread 7, time:" + std::to_string(stripe)); 
     }
 
     return 0;
@@ -586,6 +603,12 @@ void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* 
 // proofs of space in it. First, F1 is computed, which is special since it uses
 // ChaCha8, and each encryption provides multiple output values. Then, the rest of the
 // f functions are computed, and a sort on disk happens for each table.
+
+
+// 这是第一阶段，或叫前向传播。在此阶段中，对所有7个表和f函数进行计算。
+// 其结果是一个中间临时文件，它比最终文件大几倍，但其中包含所有空间证明。
+// 首先，计算F1，这是特殊的，因为它使用ChaCha8，并且每个加密提供多个输出值。
+// 然后，计算f函数的其余部分，并对每个表进行磁盘排序。
 std::vector<uint64_t> RunPhase1(
     std::vector<FileDisk>& tmp_1_disks,
     uint8_t const k,
@@ -600,10 +623,10 @@ std::vector<uint64_t> RunPhase1(
     bool const enable_bitfield,
     bool const show_progress)
 {
-    std::cout << "Computing table 1" << std::endl;
-    globals.stripe_size = stripe_size;
-    globals.num_threads = num_threads;
-    Timer f1_start_time;
+    std::cout << "Computing table 1" << std::endl;  // Computing table 1
+    globals.stripe_size = stripe_size; // 条纹深度
+    globals.num_threads = num_threads; // 线程数量
+    Timer f1_start_time; // 开始时间
     F1Calculator f1(k, id);
     uint64_t x = 0;
 
@@ -618,12 +641,14 @@ std::vector<uint64_t> RunPhase1(
         0,
         globals.stripe_size);
 
+    //这些是用于在磁盘上排序。磁盘代码上的排序需要知道每个bucket中有多少元素。
     // These are used for sorting on disk. The sort on disk code needs to know how
     // many elements are in each bucket.
     std::vector<uint64_t> table_sizes = std::vector<uint64_t>(8, 0);
     std::mutex sort_manager_mutex;
 
     {
+        // 并行执行开始
         // Start of parallel execution
         std::vector<std::thread> threads;
         for (int i = 0; i < num_threads; i++) {
@@ -633,11 +658,12 @@ std::vector<uint64_t> RunPhase1(
         for (auto& t : threads) {
             t.join();
         }
+        // 并行执行结束
         // end of parallel execution
     }
 
     uint64_t prevtableentries = 1ULL << k;
-    f1_start_time.PrintElapsed("F1 complete, time:");
+    f1_start_time.PrintElapsed("F1 complete, time:");  // F1 complete, time: 132.539 seconds. CPU (186.83%) Sun May  2 10:58:49 2021
     globals.L_sort_manager->FlushCache();
     table_sizes[1] = x + 1;
 
@@ -666,7 +692,7 @@ std::vector<uint64_t> RunPhase1(
             }
         }
 
-        std::cout << "Computing table " << int{table_index + 1} << std::endl;
+        std::cout << "Computing table " << int{table_index + 1} << std::endl; // Computing table 2
         // Start of parallel execution
 
         FxCalculator f(k, table_index + 1);  // dummy to load static table
@@ -730,7 +756,7 @@ std::vector<uint64_t> RunPhase1(
         // end of parallel execution
 
         // Total matches found in the left table
-        std::cout << "\tTotal matches: " << globals.matches << std::endl;
+        std::cout << "\tTotal matches: " << globals.matches << std::endl; // Total matches: 4295067799
 
         table_sizes[table_index] = globals.left_writer_count;
         table_sizes[table_index + 1] = globals.right_writer_count;
@@ -754,7 +780,7 @@ std::vector<uint64_t> RunPhase1(
         }
 
         prevtableentries = globals.right_writer_count;
-        table_timer.PrintElapsed("Forward propagation table time:");
+        table_timer.PrintElapsed("Forward propagation table time:"); // Forward propagation table time: 2301.191 seconds. CPU (163.650%) Sun May  2 11:37:10 2021
         if (show_progress) {
             progress(1, table_index, 6);
         }

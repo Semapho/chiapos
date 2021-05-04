@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) try {
     // Default values
     uint8_t k = 20;                 // K的大小
     uint32_t num_buckets = 0;       // 桶的数量
-    uint32_t num_stripes = 0;       // 条纹(内存)大小
+    uint32_t num_stripes = 0;       // 条带深度
     uint8_t num_threads = 0;        // 线程数量
     string filename = "plot.dat";   // Plots文件的后缀名
     string tempdir = ".";           // 临时文件存放路径，默认为当前路径下

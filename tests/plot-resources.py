@@ -121,6 +121,7 @@ def run_ProofOfSpace(k_size, threads, disable_bitfield):
             + " -d "
             + finaldir
         )
+        # .\ProofOfSpace.exe create -k 25 -r 2 -b 4608 -u 64 -t . -2 . -d .
         print("cmd is ", cmd, "\n")
         try:
             pro = subprocess.Popen(
@@ -145,6 +146,8 @@ def run_ProofOfSpace(k_size, threads, disable_bitfield):
             plot_out += str(e)
             return plot_out
         print(f"Finished k={k_size}", flush=True)
+
+        # 计算绘图时间
         end = time.time()
         bPollSpace = False
         plot_out += "\nTotal time for ProofOfSpace: " + str(end - start) + " seconds\n"
@@ -162,6 +165,7 @@ def run_ProofOfSpace(k_size, threads, disable_bitfield):
             plot_out += "Total plot size: error" + str(e)
         start = time.time()
         print("Checking plot\n", flush=True)
+        # 检查
         cmd = "exec ./ProofOfSpace check -f " + finaldir + "/plot.dat 100"
         try:
             pro = subprocess.Popen(
