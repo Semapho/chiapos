@@ -157,7 +157,7 @@ void* phase1_thread(THREADDATA* ptd)
     uint64_t totalstripes = (prevtableentries + globals.stripe_size - 1) / globals.stripe_size;
     uint64_t threadstripes = (totalstripes + globals.num_threads - 1) / globals.num_threads;
 
-    start_time.PrintElapsed("phase1_thread 2, time:"); 
+    start_time.PrintElapsed("phase1_thread 2, threadstripes = " + std::to_string(threadstripes) + ", stripe = " + std::to_string(stripe) + ",time:"); 
 
     for (uint64_t stripe = 0; stripe < threadstripes; stripe++) {
         uint64_t pos = (stripe * globals.num_threads + ptd->index) * globals.stripe_size;
@@ -169,7 +169,7 @@ void* phase1_thread(THREADDATA* ptd)
         uint64_t right_writer_count = 0;
         uint64_t matches = 0;  // Total matches
 
-        start_time.PrintElapsed("phase1_thread 3, time:" + std::to_string(stripe)); 
+        start_time.PrintElapsed("phase1_thread , stripe = " + std::to_string(stripe) + ", time:"); 
 
         // This is a sliding window of entries, since things in bucket i can match with things in
         // bucket
@@ -486,8 +486,6 @@ void* phase1_thread(THREADDATA* ptd)
             ++pos;
         }
 
-        start_time.PrintElapsed("phase1_thread 4, time:" + std::to_string(stripe)); 
-
         // If we needed new bucket, we already waited
         // Do not wait if we are the first thread, since we are guaranteed that everything is written
         if (!need_new_bucket && !first_thread) {
@@ -499,8 +497,6 @@ void* phase1_thread(THREADDATA* ptd)
         uint32_t const endbyte = (ysize + pos_size + 7) / 8 - 1;
         uint64_t const shiftamt = (8 - ((ysize + pos_size) % 8)) % 8;
         uint64_t const correction = (globals.left_writer_count - stripe_start_correction) << shiftamt;
-
-        start_time.PrintElapsed("phase1_thread 5, time:" + std::to_string(stripe)); 
 
         // Correct positions
         for (uint32_t i = 0; i < right_writer_count; i++) {
@@ -527,10 +523,6 @@ void* phase1_thread(THREADDATA* ptd)
                 right_writer_buf.get(),
                 right_writer_count * right_entry_size_bytes);
         }
-
-        start_time.PrintElapsed("phase1_thread 6, time:" + std::to_string(stripe)); 
-
-
         globals.right_writer += right_writer_count * right_entry_size_bytes;
         globals.right_writer_count += right_writer_count;
 
@@ -541,7 +533,6 @@ void* phase1_thread(THREADDATA* ptd)
 
         globals.matches += matches;
         Sem::Post(ptd->mine);
-        start_time.PrintElapsed("phase1_thread 7, time:" + std::to_string(stripe)); 
     }
 
     return 0;
