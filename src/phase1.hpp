@@ -132,7 +132,7 @@ void* phase1_thread(THREADDATA* ptd)
 
     Timer start_time; // 开始时间
 
-    start_time.PrintElapsed("phase1_thread 1, time:"); 
+    start_time.PrintElapsed("phase1_thread 1, time: "); 
 
     // Streams to read and right to tables. We will have handles to two tables. We will
     // read through the left table, compute matches, and evaluate f for matching entries,
