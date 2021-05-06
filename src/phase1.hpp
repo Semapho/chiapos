@@ -157,7 +157,7 @@ void* phase1_thread(THREADDATA* ptd)
     uint64_t totalstripes = (prevtableentries + globals.stripe_size - 1) / globals.stripe_size;
     uint64_t threadstripes = (totalstripes + globals.num_threads - 1) / globals.num_threads;
 
-    start_time.PrintElapsed("phase1_thread 2, threadstripes = " + std::to_string(threadstripes) + ", stripe = " + std::to_string(stripe) + ",time:"); 
+    start_time.PrintElapsed("phase1_thread 2, threadstripes = " + std::to_string(threadstripes) + ",time:"); 
 
     for (uint64_t stripe = 0; stripe < threadstripes; stripe++) {
         uint64_t pos = (stripe * globals.num_threads + ptd->index) * globals.stripe_size;
