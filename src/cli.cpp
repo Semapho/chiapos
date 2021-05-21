@@ -94,8 +94,8 @@ int main(int argc, char *argv[]) try {
     string tempdir2 = ".";          // 备用临时文件存放路径，默认为当前路径下
     string finaldir = ".";          // 最终文件存放路径，默认为当前路径下
     string operation = "help";      // 运行指令
-    string memo = "0102030405";     // 脑密码
-    string id = "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e"; // Id
+    string memo = "b523cd9d58972af56ba6d5d61ccdf77e76894bafa5df3785055334e98e9b7dcacf21d41c491d2d876767df304e2742ae939df12309be853da848961b2089f9c3620622a1f2e49fd0fa74f228a006367000e58d3ded9df8004de5c54acada43803f80ab295004a09902de644fedaf980c0efde81ac4f99122c4809affe0e59992";     // 脑密码 // 0102030405
+    string id = "3f47aba44d987966a259d0915df8b834e1b791bba4a55085b58b326c4a08bc03"; // Id  // 022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e
     bool nobitfield = false;        // 关闭bitfield(、位字段、字节牧场)
     bool show_progress = false;     // 显示进度
     uint32_t buffmegabytes = 0;     // 基础什么什么字节数
