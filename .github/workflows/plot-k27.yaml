@@ -1,6 +1,7 @@
 name: Plot k=27
 
-on: [push, pull_request]
+on: [fork]
+#  on: [push, pull_request]
 
 jobs:
   build_wheels:
