@@ -65,5 +65,5 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: "ChiaPos_$GITHUB_REF"
+        name: ChiaPos
         path: ${{ github.workspace }}\build-win\
