@@ -61,9 +61,9 @@ jobs:
         cmake --build . -- -j 6
         ./RunTests
 
-    - name: Upload Windows exe's to artifacts
+    - name: Upload ChiaPos
       if: startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: Windows-Exe
-        path: ${{ github.workspace }}\build-win\Release\
+        name: ChiaPos
+        path: ${{ github.workspace }}\build-win\ChiaPos
